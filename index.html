@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Website resmi Game Buku Ajaib di Desa Penyihir. Unduh dan mainkan petualangan RPG pixel art sekarang.">
+    <title>Buku Ajaib di Desa Penyihir | Official Game Site</title>
+    <style>
+        /* =========================================
+           VARIABLES & RESET
+           ========================================= */
+        :root {
+            --mc-green: #3c8527;
+            --mc-green-light: #56ad3b;
+            --mc-dark: #191919;
+            --mc-darker: #111111;
+            --mc-gray: #2d2d2d;
+            --text-white: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --accent-magic: #8e44ad;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background-color: var(--mc-darker);
+            color: var(--text-white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* =========================================
+           NAVIGATION
+           ========================================= */
+        .navbar {
+            position: fixed;
+            top: 0; width: 100%;
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 2px solid #333;
+        }
+
+        .nav-brand img { height: 40px; width: auto; transition: transform 0.3s; }
+        .nav-brand img:hover { transform: scale(1.1); }
+
+        .nav-menu { display: flex; gap: 25px; align-items: center; }
+        .nav-menu a {
+            color: var(--text-white);
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .nav-menu a:not(.nav-btn):hover { color: var(--mc-green-light); }
+        
+        .nav-btn {
+            background-color: var(--mc-green);
+            padding: 8px 20px;
+            border-radius: 4px;
+            border-bottom: 3px solid #265c18;
+        }
+        .nav-btn:hover {
+            background-color: var(--mc-green-light);
+            transform: translateY(-2px);
+        }
+
+        /* =========================================
+           HERO SECTION
+           ========================================= */
+        .hero {
+            height: 100vh;
+            min-height: 600px;
+            /* Ganti URL ini dengan gambar background Anda sendiri jika link mati */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), var(--mc-darker)), 
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-logo img {
+            max-width: 600px;
+            width: 100%;
+            filter: drop-shadow(0 0 20px rgba(142, 68, 173, 0.8));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .btn-main {
+            display: inline-block;
+            background-color: var(--mc-green);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 15px 40px;
+            text-decoration: none;
+            text-transform: uppercase;
+            box-shadow: 0 6px 0 #265c18;
+            transition: all 0.2s;
+            border: 2px solid #4caf50;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        .btn-main:hover {
+            background-color: var(--mc-green-light);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #265c18;
+        }
+        .btn-main:active { transform: translateY(4px); box-shadow: 0 2px 0 #265c18; }
+
+        /* =========================================
+           SECTIONS GENERIC
+           ========================================= */
+        .section { padding: 80px 10%; border-bottom: 1px solid #222; }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+            position: relative;
+            color: var(--text-white);
+        }
+        .section-title::after {
+            content: ''; display: block; width: 80px; height: 4px;
+            background: var(--mc-green); margin: 15px auto 0;
+        }
+
+        /* =========================================
+           SPECIFIC SECTIONS
+           ========================================= */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        .feature-text h3 { font-size: 1.8rem; color: var(--mc-green); margin-bottom: 15px; }
+        .feature-image img { width: 100%; border: 2px solid #444; border-radius: 8px; }
+
+        .video-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+            border: 2px solid var(--mc-gray); background: #000;
+        }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        /* Dev Cards */
+        .dev-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        .dev-card {
+            background-color: var(--mc-gray);
+            border: 1px solid #444;
+            transition: transform 0.3s;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .dev-card:hover { transform: translateY(-5px); border-color: var(--mc-green); }
+        .dev-img-box { height: 250px; overflow: hidden; }
+        .dev-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .dev-content { padding: 20px; text-align: center; }
+        .dev-role {
+            background: var(--accent-magic); color: white;
+            padding: 3px 10px; font-size: 0.75rem; border-radius: 15px;
+            text-transform: uppercase; font-weight: bold; display: inline-block; margin-bottom: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #000; padding: 40px 10%;
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            border-top: 1px solid #333; gap: 20px;
+        }
+        .footer-links a { color: var(--text-muted); margin-left: 20px; text-decoration: none; font-size: 0.9rem; }
+        .footer-links a:hover { color: white; }
+
+        /* =========================================
+           RESPONSIVE
+           ========================================= */
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; padding: 15px; }
+            .nav-menu { margin-top: 15px; flex-wrap: wrap; justify-content: center; gap: 15px; }
+            .features-grid { grid-template-columns: 1fr; text-align: center; }
+            .footer { flex-direction: column; text-align: center; }
+            .footer-links { margin: 0; justify-content: center; }
+            .footer-links a { margin: 0 10px; }
+            .hero-logo img { width: 80%; }
+            .section { padding: 60px 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="#"><img src="https://via.placeholder.com/150x50/transparent/ffffff?text=SPELLBOUND" alt="Studio Logo"></a>
+        </div>
+        <div class="nav-menu">
+            <a href="#hero">Home</a>
+            <a href="#about">Cerita</a>
+            <a href="#trailer">Cuplikan</a>
+            <a href="#developers">Tim</a>
+            <a href="#download" class="nav-btn">DOWNLOAD</a>
+        </div>
+    </nav>
+
+    <section id="hero" class="hero">
+        <div class="hero-logo">
+            <img src="https://via.placeholder.com/600x250/transparent/ffffff?text=BUKU+AJAIB" alt="Logo Game">
+        </div>
+        <h2 style="margin-top: 20px; font-weight: 300; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 4px #000;">
+            Petualangan RPG Magis Menanti Anda
+        </h2>
+        <div class="hero-cta">
+            <a href="#download" class="btn-main">MAIN SEKARANG</a>
+        </div>
+    </section>
+
+    <section id="about" class="section" style="background-color: var(--mc-gray);">
+        <h2 class="section-title">Tentang Game</h2>
+        <div class="features-grid">
+            <div class="feature-text">
+                <h3>Rahasia Desa Penyihir</h3>
+                <p style="color: #ccc; margin-bottom: 15px;">
+                    Sebuah buku kuno telah terbuka, melepaskan energi sihir yang mengubah desa damai menjadi medan pertempuran. Sebagai murid penyihir muda, tugas Anda adalah mengumpulkan halaman yang hilang.
+                </p>
+                <ul style="list-style: none; color: var(--mc-green-light);">
+                    <li>✨ Open World Exploration</li>
+                    <li>🔥 Sistem Sihir Berbasis Elemen</li>
+                    <li>⚔️ Pixel Art High-Definition</li>
+                </ul>
+            </div>
+            <div class="feature-image">
+                <img src="https://via.placeholder.com/600x400/111/8e44ad?text=Gameplay+Preview" alt="Gameplay">
+            </div>
+        </div>
+    </section>
+
+    <section id="trailer" class="section" style="background-color: var(--mc-darker);">
+        <h2 class="section-title">Cuplikan</h2>
+        <div class="video-wrapper">
+            <iframe src="https://www.youtube.com/embed/xvFZjo5PgG0" title="Game Trailer" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </section>
+
+    <section id="developers" class="section" style="background-color: var(--mc-dark);">
+        <h2 class="section-title">Tim Pengembang</h2>
+        <div class="dev-container">
+            <div class="dev-card">
+                <div class="dev-img-box">
+                    <img src="https://cdn.discordapp.com/attachments/1386621661293449346/1440708997131927603/6a62d5aab8a8339356833df0e098e7c7.jpg?ex=691f244f&is=691dd2cf&hm=08f5d49348d19989c5a919b0a160798a8577871d52ed1a0fbf7af8e31ce95d39&" alt="Ell Lingga">
+                </div>
+                <div class="dev-content">
+                    <span class="dev-role">Lead Programmer</span>
+                    <h3 class="dev-name">Ell Lingga</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Master logic & magic systems.</p>
+                </div>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-img-box">
+                    <img src="https://via.placeholder.com/300x300/333/fff?text=Andika" alt="Andika">
+                </div>
+                <div class="dev-content">
+                    <span class="dev-role">Art Director</span>
+                    <h3 class="dev-name">Andika</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Pixel art specialist.</p>
+                </div>
+            </div>
+
+            <div class="dev-card">
+                <div class="dev-img-box">
+                    <img src="https://via.placeholder.com/300x300/333/fff?text=Faathir" alt="Faathir">
+                </div>
+                <div class="dev-content">
+                    <span class="dev-role">Story Writer</span>
+                    <h3 class="dev-name">Faathir</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Lore & world builder.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="download" class="section" style="text-align: center; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80'); background-size: cover;">
+        <h2 class="section-title">Mulai Petualangan</h2>
+        <p style="margin-bottom: 30px; font-size: 1.2rem;">Siap untuk menyelamatkan desa?</p>
+        <a href="#" class="btn-main">UNDUH VERSI PC</a>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-brand">
+            <span style="font-weight: bold; font-size: 1.2rem; color: white;">SpellBound Studio</span>
+            <p style="color: #666; font-size: 0.9rem;">&copy; 2025 Hak Cipta Dilindungi.</p>
+        </div>
+        <div class="footer-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Support</a>
+        </div>
+    </footer>
+
+</body>
+</html>
