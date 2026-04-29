@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Rakha Gacha Top Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070f;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --border: #21262d;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --pending: #d29922;
+      --approved: #3fb950;
+      --rejected: #f85149;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* LOGIN */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 0%, #1a1f2e 0%, var(--bg) 70%);
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 360px;
+      text-align: center;
+    }
+
+    .login-box .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .login-box h1 { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .login-box p { font-size: 0.82rem; color: var(--muted); margin-bottom: 24px; }
+
+    .login-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus { border-color: var(--accent); }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .login-btn:hover { opacity: 0.85; }
+    .login-error { color: var(--red); font-size: 0.8rem; margin-top: 8px; }
+
+    /* MAIN PANEL */
+    #admin-panel { display: none; }
+
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-logo { font-size: 1.1rem; font-weight: 800; }
+    .topbar-badge {
+      background: var(--accent);
+      color: #0d1117;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .refresh-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      font-weight: 700;
+      transition: border-color 0.2s;
+    }
+
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 700px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .stat-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+    .stat-value.pending-color { color: var(--yellow); }
+    .stat-value.approved-color { color: var(--green); }
+    .stat-value.rejected-color { color: var(--red); }
+    .stat-value.total-color { color: var(--accent); }
+
+    /* FILTERS */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(88, 166, 255, 0.1);
+    }
+
+    .filter-btn:hover { border-color: var(--accent); }
+
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+      margin-left: auto;
+      width: 200px;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      background: var(--surface2);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+
+    td {
+      padding: 14px 16px;
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+
+    .player-name { font-weight: 700; font-size: 0.9rem; }
+    .req-id { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+    .gems-cell { font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #a78bfa; }
+    .amount-cell { font-weight: 700; color: var(--green); }
+    .method-badge {
+      background: rgba(88,166,255,0.1);
+      border: 1px solid rgba(88,166,255,0.25);
+      color: var(--accent);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-pending  { background: rgba(210,153,34,0.15);  border: 1px solid rgba(210,153,34,0.4);  color: var(--yellow); }
+    .status-approved { background: rgba(63,185,80,0.15);   border: 1px solid rgba(63,185,80,0.4);   color: var(--green); }
+    .status-rejected { background: rgba(248,81,73,0.15);   border: 1px solid rgba(248,81,73,0.4);   color: var(--red); }
+
+    .time-cell { font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+    .action-cell { display: flex; gap: 6px; }
+
+    .btn-approve, .btn-reject, .btn-detail {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.2s;
+    }
+
+    .btn-approve {
+      background: rgba(63,185,80,0.1);
+      border-color: rgba(63,185,80,0.4);
+      color: var(--green);
+    }
+    .btn-approve:hover { background: rgba(63,185,80,0.25); }
+
+    .btn-reject {
+      background: rgba(248,81,73,0.1);
+      border-color: rgba(248,81,73,0.4);
+      color: var(--red);
+    }
+    .btn-reject:hover { background: rgba(248,81,73,0.25); }
+
+    .btn-detail {
+      background: rgba(88,166,255,0.08);
+      border-color: rgba(88,166,255,0.3);
+      color: var(--accent);
+    }
+    .btn-detail:hover { background: rgba(88,166,255,0.18); }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.85rem; }
+
+    /* LOADING */
+    .loading-row td { text-align: center; padding: 40px; color: var(--muted); font-size: 0.85rem; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 480px;
+      max-width: 100%;
+      padding: 28px;
+      transform: translateY(20px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-field {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .modal-field-label { font-size: 0.68rem; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .modal-field-value { font-size: 0.9rem; font-weight: 700; }
+    .modal-field-value.mono { font-family: 'JetBrains Mono', monospace; }
+
+    .modal-note-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      margin: 12px 0;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    .modal-note-input:focus { border-color: var(--accent); }
+
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+    .modal-btn {
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-weight: 800;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-cancel {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .modal-btn-cancel:hover { color: var(--text); }
+
+    .modal-btn-approve {
+      background: rgba(63,185,80,0.15);
+      border-color: rgba(63,185,80,0.5);
+      color: var(--green);
+    }
+    .modal-btn-approve:hover { background: rgba(63,185,80,0.3); }
+
+    .modal-btn-reject {
+      background: rgba(248,81,73,0.15);
+      border-color: rgba(248,81,73,0.5);
+      color: var(--red);
+    }
+    .modal-btn-reject:hover { background: rgba(248,81,73,0.3); }
+
+    .proof-img { width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid var(--border); }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Auto refresh indicator */
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .dot-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Proof preview link */
+    .proof-link {
+      color: var(--accent);
+      font-size: 0.75rem;
+      text-decoration: none;
+      border-bottom: 1px dashed;
+    }
+
+    .proof-link:hover { color: var(--text); }
+
+    @media (max-width: 700px) {
+      .main { padding: 12px; }
+      table { font-size: 0.78rem; }
+      td { padding: 10px 10px; }
+      thead th { padding: 10px; }
+      .action-cell { flex-direction: column; }
+      .search-input { width: 100%; margin-left: 0; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="icon">🔐</div>
+    <h1>Admin Panel</h1>
+    <p>Rakha Gacha — Sistem Top Up</p>
+    <input type="password" class="login-input" id="pwd-input" placeholder="Password Admin" onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Masuk</button>
+    <div class="login-error" id="login-error" style="display:none;">Password salah!</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">💎 Admin Panel</span>
+      <span class="topbar-badge">RAKHA GACHA</span>
+    </div>
+    <div class="topbar-right">
+      <div class="auto-refresh"><div class="dot-pulse"></div> <span id="refresh-timer">30s</span></div>
+      <button class="refresh-btn" onclick="loadRequests()">↻ Refresh</button>
+      <button class="logout-btn" onclick="logout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Request</div>
+        <div class="stat-value total-color" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Menunggu</div>
+        <div class="stat-value pending-color" id="stat-pending">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Disetujui</div>
+        <div class="stat-value approved-color" id="stat-approved">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ditolak</div>
+        <div class="stat-value rejected-color" id="stat-rejected">—</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all', this)">Semua</button>
+      <button class="filter-btn" onclick="setFilter('pending', this)">⏳ Pending</button>
+      <button class="filter-btn" onclick="setFilter('approved', this)">✅ Approved</button>
+      <button class="filter-btn" onclick="setFilter('rejected', this)">❌ Rejected</button>
+      <input class="search-input" id="search-input" type="text" placeholder="🔍 Cari nama player..." oninput="renderTable()">
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Gems</th>
+            <th>Harga</th>
+            <th>Metode</th>
+            <th>Status</th>
+            <th>Waktu</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr class="loading-row"><td colspan="7">⏳ Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal-box">
+    <div class="modal-title">📋 Detail Request</div>
+    <div id="modal-fields"></div>
+    <textarea class="modal-note-input" id="admin-note" rows="3" placeholder="Catatan admin (opsional)..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Tutup</button>
+      <button class="modal-btn modal-btn-reject" id="modal-reject-btn" onclick="actionFromModal('rejected')">❌ Tolak</button>
+      <button class="modal-btn modal-btn-approve" id="modal-approve-btn" onclick="actionFromModal('approved')">✅ Setujui</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────
+let adminPassword = '';
+let allRequests = [];
+let currentFilter = 'all';
+let currentRequestId = null;
+let refreshInterval = null;
+let refreshCountdown = 30;
+
+// Detect current host for API calls
+const API_BASE = window.location.origin;
+
+// ─── AUTH ─────────────────────────────────────────────────────────
+function login() {
+  const pwd = document.getElementById('pwd-input').value.trim();
+  if (!pwd) return;
+  adminPassword = pwd;
+  // Test credentials by fetching data
+  fetch(`${API_BASE}/api/admin`, {
+    headers: { 'x-admin-password': adminPassword }
+  }).then(r => {
+    if (r.status === 401) {
+      document.getElementById('login-error').style.display = 'block';
+      adminPassword = '';
+    } else if (r.ok) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      r.json().then(data => {
+        allRequests = data;
+        renderTable();
+        updateStats();
+        startAutoRefresh();
+      });
+    }
+  }).catch(() => {
+    document.getElementById('login-error').textContent = 'Gagal konek ke server!';
+    document.getElementById('login-error').style.display = 'block';
+  });
+}
+
+function logout() {
+  adminPassword = '';
+  clearInterval(refreshInterval);
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// ─── AUTO REFRESH ──────────────────────────────────────────────────
+function startAutoRefresh() {
+  refreshCountdown = 30;
+  clearInterval(refreshInterval);
+  refreshInterval = setInterval(() => {
+    refreshCountdown--;
+    document.getElementById('refresh-timer').textContent = refreshCountdown + 's';
+    if (refreshCountdown <= 0) {
+      loadRequests();
+    }
+  }, 1000);
+}
+
+// ─── DATA ─────────────────────────────────────────────────────────
+function loadRequests() {
+  refreshCountdown = 30;
+  fetch(`${API_BASE}/api/admin`, {
+    headers: { 'x-admin-password': adminPassword }
+  }).then(r => r.json()).then(data => {
+    allRequests = Array.isArray(data) ? data : [];
+    renderTable();
+    updateStats();
+    showToast('✓ Data diperbarui');
+  }).catch(() => showToast('❌ Gagal memuat data', true));
+}
+
+// ─── STATS ─────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent = allRequests.length;
+  document.getElementById('stat-pending').textContent  = allRequests.filter(r => r.status === 'pending').length;
+  document.getElementById('stat-approved').textContent = allRequests.filter(r => r.status === 'approved').length;
+  document.getElementById('stat-rejected').textContent = allRequests.filter(r => r.status === 'rejected').length;
+}
+
+// ─── FILTER ───────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+// ─── TABLE ────────────────────────────────────────────────────────
+function renderTable() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  let filtered = allRequests.filter(r => {
+    const matchFilter = currentFilter === 'all' || r.status === currentFilter;
+    const matchSearch = !query || r.playerName.toLowerCase().includes(query);
+    return matchFilter && matchSearch;
+  });
+
+  const tbody = document.getElementById('table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = `
+      <tr><td colspan="7">
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <p>Tidak ada request ditemukan</p>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => `
+    <tr>
+      <td>
+        <div class="player-name">${escHtml(r.playerName)}</div>
+        <div class="req-id">${r.id}</div>
+      </td>
+      <td><span class="gems-cell">💎 ${r.gems}</span></td>
+      <td><span class="amount-cell">${formatRp(r.amount)}</span></td>
+      <td><span class="method-badge">${escHtml(r.paymentMethod)}</span></td>
+      <td>${statusBadge(r.status)}</td>
+      <td><div class="time-cell">${formatTime(r.createdAt)}</div></td>
+      <td>
+        <div class="action-cell">
+          <button class="btn-detail" onclick="openDetail('${r.id}')">Detail</button>
+          ${r.status === 'pending' ? `
+            <button class="btn-approve" onclick="quickAction('${r.id}', 'approved')">✓</button>
+            <button class="btn-reject" onclick="quickAction('${r.id}', 'rejected')">✕</button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function statusBadge(status) {
+  const map = {
+    pending:  `<span class="status-badge status-pending">⏳ Pending</span>`,
+    approved: `<span class="status-badge status-approved">✅ Approved</span>`,
+    rejected: `<span class="status-badge status-rejected">❌ Rejected</span>`,
+  };
+  return map[status] || status;
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────────
+function quickAction(id, action) {
+  if (action === 'approved' && !confirm(`Setujui request ${id}?`)) return;
+  if (action === 'rejected' && !confirm(`Tolak request ${id}?`)) return;
+  sendAction(id, action, '');
+}
+
+function actionFromModal(action) {
+  const note = document.getElementById('admin-note').value.trim();
+  sendAction(currentRequestId, action, note);
+  closeModal();
+}
+
+function sendAction(id, action, note) {
+  fetch(`${API_BASE}/api/admin`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-password': adminPassword
+    },
+    body: JSON.stringify({ id, action, adminNote: note })
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      const idx = allRequests.findIndex(r => r.id === id);
+      if (idx >= 0) allRequests[idx] = data.request;
+      renderTable();
+      updateStats();
+      showToast(action === 'approved' ? '✅ Request disetujui!' : '❌ Request ditolak!');
+    } else {
+      showToast('Gagal: ' + (data.error || 'Unknown error'), true);
+    }
+  }).catch(() => showToast('❌ Gagal kirim aksi', true));
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────
+function openDetail(id) {
+  const r = allRequests.find(x => x.id === id);
+  if (!r) return;
+  currentRequestId = id;
+
+  const fields = [
+    { label: 'ID Request', value: r.id, mono: true },
+    { label: 'Nama Player', value: r.playerName },
+    { label: 'Gems Diminta', value: `💎 ${r.gems} Gems` },
+    { label: 'Nominal Bayar', value: formatRp(r.amount) },
+    { label: 'Metode Pembayaran', value: r.paymentMethod },
+    { label: 'Status', value: statusBadge(r.status) },
+    { label: 'Waktu Request', value: formatTime(r.createdAt), mono: true },
+    { label: 'Diperbarui', value: formatTime(r.updatedAt), mono: true },
+  ];
+
+  if (r.adminNote) fields.push({ label: 'Catatan Admin', value: r.adminNote });
+
+  let fieldsHTML = fields.map(f => `
+    <div class="modal-field">
+      <div class="modal-field-label">${f.label}</div>
+      <div class="modal-field-value ${f.mono ? 'mono' : ''}">${f.value}</div>
+    </div>
+  `).join('');
+
+  if (r.paymentProof) {
+    fieldsHTML += `
+      <div class="modal-field">
+        <div class="modal-field-label">Bukti Pembayaran</div>
+        <a href="${r.paymentProof}" target="_blank" class="proof-link">Lihat bukti →</a>
+      </div>`;
+  }
+
+  document.getElementById('modal-fields').innerHTML = fieldsHTML;
+  document.getElementById('admin-note').value = r.adminNote || '';
+
+  const isPending = r.status === 'pending';
+  document.getElementById('modal-approve-btn').style.display = isPending ? 'inline-flex' : 'none';
+  document.getElementById('modal-reject-btn').style.display  = isPending ? 'inline-flex' : 'none';
+
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('detail-modal').classList.remove('open');
+  currentRequestId = null;
+}
+
+document.getElementById('detail-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ─── HELPERS ──────────────────────────────────────────────────────
+function formatRp(amount) {
+  return 'Rp ' + Number(amount).toLocaleString('id-ID');
+}
+
+function formatTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'})
+    + ' ' + d.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+let toastTimeout;
+function showToast(msg, isErr = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isErr ? 'rgba(248,81,73,0.4)' : 'rgba(63,185,80,0.4)';
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login();
+});
+</script>
+</body>
+</html>
