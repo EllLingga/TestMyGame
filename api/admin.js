@@ -89,7 +89,7 @@ module.exports = async (req, res) => {
         return;
       }
 
-      record.requests[idx].status = action === "approve" ? "approved" : "rejected";
+      record.requests[idx].status = action === "approved" ? "approved" : "rejected";
       record.requests[idx].adminNote = adminNote || "";
       record.requests[idx].updatedAt = new Date().toISOString();
 
