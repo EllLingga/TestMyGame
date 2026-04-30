@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Rakha Gacha Top Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070f;
+      --surface: #0d1117;
+      --surface2: #161b22;
+      --border: #21262d;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --purple: #a855f7;
+      --text: #e6edf3;
+      --muted: #7d8590;
+      --pending: #d29922;
+      --approved: #3fb950;
+      --rejected: #f85149;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── LOGIN ─────────────────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 0%, #1a1f2e 0%, var(--bg) 70%);
+      padding: 16px;
+    }
+
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .login-box .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .login-box h1 { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .login-box p { font-size: 0.82rem; color: var(--muted); margin-bottom: 24px; }
+
+    .login-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus { border-color: var(--accent); }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .login-btn:hover { opacity: 0.85; }
+    .login-error { color: var(--red); font-size: 0.8rem; margin-top: 8px; }
+
+    /* ─── MAIN PANEL ─────────────────────────────────────────── */
+    #admin-panel { display: none; }
+
+    /* ─── TOPBAR ─────────────────────────────────────────────── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .topbar-logo { font-size: 1rem; font-weight: 800; white-space: nowrap; }
+    .topbar-badge {
+      background: var(--accent);
+      color: #0d1117;
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .refresh-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      font-weight: 700;
+      transition: border-color 0.2s;
+      white-space: nowrap;
+    }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* ─── TAB NAV ────────────────────────────────────────────── */
+    .tab-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 0 16px;
+    }
+    .tab-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-btn:hover { color: var(--text); }
+
+    /* ─── MAIN CONTENT ───────────────────────────────────────── */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* ─── TAB PANELS ─────────────────────────────────────────── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ─── STATS ROW ──────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .stat-label { font-size: 0.65rem; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+    .stat-value.pending-color { color: var(--yellow); }
+    .stat-value.approved-color { color: var(--green); }
+    .stat-value.rejected-color { color: var(--red); }
+    .stat-value.total-color { color: var(--accent); }
+
+    /* ─── FILTERS ────────────────────────────────────────────── */
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.1); }
+    .filter-btn:hover { border-color: var(--accent); }
+
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      flex: 1;
+      min-width: 140px;
+    }
+    .search-input:focus { border-color: var(--accent); }
+
+    /* ─── TABLE ──────────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    thead th {
+      background: var(--surface2);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    td { padding: 12px 14px; font-size: 0.82rem; vertical-align: middle; }
+
+    .player-name { font-weight: 700; font-size: 0.88rem; }
+    .req-id { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+    .gems-cell { font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #a78bfa; }
+    .amount-cell { font-weight: 700; color: var(--green); }
+    .method-badge {
+      background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.25);
+      color: var(--accent); padding: 3px 8px; border-radius: 6px;
+      font-size: 0.68rem; font-weight: 700; display: inline-block; white-space: nowrap;
+    }
+    .status-badge {
+      padding: 3px 9px; border-radius: 20px; font-size: 0.68rem; font-weight: 800;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    .status-pending  { background: rgba(210,153,34,0.15); border: 1px solid rgba(210,153,34,0.4); color: var(--yellow); }
+    .status-approved { background: rgba(63,185,80,0.15);  border: 1px solid rgba(63,185,80,0.4);  color: var(--green); }
+    .status-rejected { background: rgba(248,81,73,0.15);  border: 1px solid rgba(248,81,73,0.4);  color: var(--red); }
+    .time-cell { font-size: 0.68rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .action-cell { display: flex; gap: 5px; flex-wrap: wrap; }
+
+    .btn-approve, .btn-reject, .btn-detail {
+      padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;
+      font-family: 'Syne', sans-serif; cursor: pointer; border: 1px solid; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-approve { background: rgba(63,185,80,0.1); border-color: rgba(63,185,80,0.4); color: var(--green); }
+    .btn-approve:hover { background: rgba(63,185,80,0.25); }
+    .btn-reject { background: rgba(248,81,73,0.1); border-color: rgba(248,81,73,0.4); color: var(--red); }
+    .btn-reject:hover { background: rgba(248,81,73,0.25); }
+    .btn-detail { background: rgba(88,166,255,0.08); border-color: rgba(88,166,255,0.3); color: var(--accent); }
+    .btn-detail:hover { background: rgba(88,166,255,0.18); }
+
+    .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .empty-state p { font-size: 0.82rem; }
+    .loading-row td { text-align: center; padding: 40px; color: var(--muted); font-size: 0.82rem; }
+
+    /* ─── GIVE CARD PANEL ────────────────────────────────────── */
+    .give-card-panel {
+      max-width: 720px;
+    }
+
+    .section-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .give-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 500px) { .give-form-grid { grid-template-columns: 1fr; } }
+
+    .form-group label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus { border-color: var(--accent); }
+
+    .give-type-toggle {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .give-type-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .give-type-btn.active-gems { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.1); }
+    .give-type-btn.active-card { border-color: var(--green); color: var(--green); background: rgba(63,185,80,0.1); }
+
+    /* Card picker grid */
+    .card-picker-wrap {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .card-picker-search {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 7px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      outline: none;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+    .card-picker-search:focus { border-color: var(--accent); }
+
+    .rarity-filter-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .rarity-pill {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.2s;
+      background: transparent;
+    }
+    .rarity-pill.selected { opacity: 1; }
+    .rarity-pill:not(.selected) { opacity: 0.35; }
+
+    .card-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+    }
+
+    .card-pick-item {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .card-pick-item:hover { border-color: rgba(88,166,255,0.5); transform: translateY(-2px); }
+    .card-pick-item.selected { border-width: 2px; transform: translateY(-2px); }
+
+    .card-pick-img {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 5px;
+    }
+    .card-pick-name {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .card-pick-rarity {
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .card-pick-check {
+      position: absolute;
+      top: -6px; right: -6px;
+      background: var(--green);
+      color: #000;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      font-size: 0.6rem;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900;
+    }
+
+    /* Give confirm box */
+    .give-confirm-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .give-confirm-box b { color: var(--text); }
+
+    .btn-give {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      border: none;
+      color: white;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-give:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-give:active { transform: scale(0.97); }
+    .btn-give:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-give-gems {
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    }
+    .btn-give-gems.active-btn { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+    /* Give log */
+    .give-log {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    .give-log-header {
+      background: var(--surface2);
+      padding: 10px 14px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .give-log-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .give-log-item:last-child { border-bottom: none; }
+    .give-log-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .give-log-text { flex: 1; }
+    .give-log-time { font-size: 0.68rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+
+    /* ─── MODAL ──────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999; padding: 16px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      width: 100%; max-width: 480px; padding: 24px;
+      transform: translateY(20px); transition: transform 0.2s; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-title { font-size: 1rem; font-weight: 800; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+    .modal-field { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+    .modal-field-label { font-size: 0.65rem; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .modal-field-value { font-size: 0.88rem; font-weight: 700; }
+    .modal-field-value.mono { font-family: 'JetBrains Mono', monospace; }
+    .modal-note-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      padding: 10px 12px; border-radius: 8px; font-family: 'Syne', sans-serif;
+      font-size: 0.83rem; margin: 10px 0; outline: none; resize: vertical; transition: border-color 0.2s;
+    }
+    .modal-note-input:focus { border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
+    .modal-btn {
+      padding: 8px 18px; border-radius: 8px; font-size: 0.8rem; font-weight: 800;
+      font-family: 'Syne', sans-serif; cursor: pointer; border: 1px solid; transition: all 0.2s;
+    }
+    .modal-btn-cancel { background: transparent; border-color: var(--border); color: var(--muted); }
+    .modal-btn-cancel:hover { color: var(--text); }
+    .modal-btn-approve { background: rgba(63,185,80,0.15); border-color: rgba(63,185,80,0.5); color: var(--green); }
+    .modal-btn-approve:hover { background: rgba(63,185,80,0.3); }
+    .modal-btn-reject { background: rgba(248,81,73,0.15); border-color: rgba(248,81,73,0.5); color: var(--red); }
+    .modal-btn-reject:hover { background: rgba(248,81,73,0.25); }
+    .proof-link { color: var(--accent); font-size: 0.75rem; text-decoration: none; border-bottom: 1px dashed; }
+    .proof-link:hover { color: var(--text); }
+
+    /* ─── TOAST ──────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 20px; right: 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+      z-index: 9999; opacity: 0; transform: translateY(10px);
+      transition: all 0.3s; pointer-events: none; max-width: calc(100vw - 32px);
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ─── AUTO REFRESH ───────────────────────────────────────── */
+    .auto-refresh { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .dot-pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.85); } }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="icon">🔐</div>
+    <h1>Admin Panel</h1>
+    <p>Rakha Gacha — Sistem Top Up</p>
+    <input type="password" class="login-input" id="pwd-input" placeholder="Password Admin" onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Masuk</button>
+    <div class="login-error" id="login-error" style="display:none;">Password salah!</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-logo">💎 Admin Panel</span>
+      <span class="topbar-badge">RAKHA GACHA</span>
+    </div>
+    <div class="topbar-right">
+      <div class="auto-refresh"><div class="dot-pulse"></div><span id="refresh-timer">30s</span></div>
+      <button class="refresh-btn" onclick="loadRequests()">↻ Refresh</button>
+      <button class="logout-btn" onclick="logout()">Keluar</button>
+    </div>
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('topup', this)">📋 Top Up Request</button>
+    <button class="tab-btn" onclick="switchTab('givecard', this)">🎁 Give Card / Gems</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ══ TAB: TOP UP REQUESTS ══════════════════════════════ -->
+    <div id="tab-topup" class="tab-panel active">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total</div>
+          <div class="stat-value total-color" id="stat-total">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Menunggu</div>
+          <div class="stat-value pending-color" id="stat-pending">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Disetujui</div>
+          <div class="stat-value approved-color" id="stat-approved">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ditolak</div>
+          <div class="stat-value rejected-color" id="stat-rejected">—</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('all',this)">Semua</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">⏳ Pending</button>
+        <button class="filter-btn" onclick="setFilter('approved',this)">✅ Approved</button>
+        <button class="filter-btn" onclick="setFilter('rejected',this)">❌ Rejected</button>
+        <input class="search-input" id="search-input" type="text" placeholder="🔍 Cari nama player..." oninput="renderTable()">
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Gems</th>
+              <th>Harga</th>
+              <th>Metode</th>
+              <th>Status</th>
+              <th>Waktu</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr class="loading-row"><td colspan="7">⏳ Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ TAB: GIVE CARD / GEMS ══════════════════════════════ -->
+    <div id="tab-givecard" class="tab-panel">
+      <div class="give-card-panel">
+
+        <div class="section-header" style="margin-bottom:14px;">🎁 Give Card atau Gems ke Player</div>
+
+        <!-- Target player -->
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Nama Player (kosongkan = semua player)</label>
+          <input type="text" class="form-control" id="give-player" placeholder="Contoh: Rakha123 (opsional)">
+        </div>
+
+        <!-- Type toggle -->
+        <div class="section-header">Jenis Hadiah</div>
+        <div class="give-type-toggle">
+          <button class="give-type-btn active-gems" id="toggle-gems" onclick="setGiveType('gems')">💎 Gems</button>
+          <button class="give-type-btn" id="toggle-card" onclick="setGiveType('card')">🃏 Kartu</button>
+        </div>
+
+        <!-- GEMS SECTION -->
+        <div id="give-gems-section">
+          <div class="section-header">Jumlah Gems</div>
+          <div class="give-form-grid">
+            <div class="form-group">
+              <label>Jumlah Gems</label>
+              <input type="number" class="form-control" id="give-gems-amount" value="100" min="1" max="99999">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;padding-bottom:0;">
+                <button style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.4);color:#a78bfa;padding:6px 10px;border-radius:6px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'Syne',sans-serif;" onclick="document.getElementById('give-gems-amount').value=50">+50</button>
+                <button style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.4);color:#a78bfa;padding:6px 10px;border-radius:6px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'Syne',sans-serif;" onclick="document.getElementById('give-gems-amount').value=100">+100</button>
+                <button style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.4);color:#a78bfa;padding:6px 10px;border-radius:6px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'Syne',sans-serif;" onclick="document.getElementById('give-gems-amount').value=500">+500</button>
+                <button style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.4);color:#a78bfa;padding:6px 10px;border-radius:6px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'Syne',sans-serif;" onclick="document.getElementById('give-gems-amount').value=1000">+1000</button>
+              </div>
+            </div>
+          </div>
+          <div class="give-confirm-box" id="gems-confirm-preview">
+            Akan memberikan <b id="gems-preview-amount">100</b> 💎 Gems ke <b id="gems-preview-player">semua player</b>
+          </div>
+          <button class="btn-give btn-give-gems" onclick="executeGive('gems')">
+            💎 Give Gems Sekarang
+          </button>
+        </div>
+
+        <!-- CARD SECTION -->
+        <div id="give-card-section" style="display:none;">
+          <div class="section-header">Pilih Kartu</div>
+
+          <!-- Rarity filter -->
+          <div class="card-picker-wrap">
+            <input type="text" class="card-picker-search" id="card-picker-search" placeholder="🔍 Cari nama kartu..." oninput="filterCardPicker()">
+            <div class="rarity-filter-row" id="rarity-filters">
+              <!-- Populated by JS -->
+            </div>
+            <div class="card-picker-grid" id="card-picker-grid">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Selected card preview -->
+          <div id="selected-card-preview" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+            <img id="sel-card-img" src="" style="width:48px;height:64px;object-fit:cover;border-radius:6px;border:2px solid var(--border);">
+            <div>
+              <div id="sel-card-name" style="font-weight:700;font-size:0.9rem;"></div>
+              <div id="sel-card-rarity" style="font-size:0.75rem;margin-top:2px;font-weight:800;"></div>
+            </div>
+          </div>
+
+          <div class="give-form-grid" style="margin-bottom:14px;">
+            <div class="form-group">
+              <label>Jumlah Kartu</label>
+              <input type="number" class="form-control" id="give-card-qty" value="1" min="1" max="99">
+            </div>
+          </div>
+
+          <div class="give-confirm-box" id="card-confirm-preview">
+            Pilih kartu terlebih dahulu di atas
+          </div>
+
+          <button class="btn-give" id="btn-give-card" onclick="executeGive('card')" disabled>
+            🃏 Give Kartu Sekarang
+          </button>
+        </div>
+
+        <!-- Give Log -->
+        <div class="give-log" id="give-log">
+          <div class="give-log-header">📜 Riwayat Give</div>
+          <div id="give-log-body">
+            <div class="give-log-item" style="color:var(--muted);font-size:0.8rem;justify-content:center;">Belum ada riwayat</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /admin-panel -->
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal-box">
+    <div class="modal-title">📋 Detail Request</div>
+    <div id="modal-fields"></div>
+    <textarea class="modal-note-input" id="admin-note" rows="3" placeholder="Catatan admin (opsional)..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Tutup</button>
+      <button class="modal-btn modal-btn-reject" id="modal-reject-btn" onclick="actionFromModal('rejected')">❌ Tolak</button>
+      <button class="modal-btn modal-btn-approve" id="modal-approve-btn" onclick="actionFromModal('approved')">✅ Setujui</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── CARD DATA (copy dari index.html) ─────────────────────────────
+const ALL_CARDS = [
+  { id:'F1',   name:'Unknown Fighter F',  rarity:'F',   color:'#64748b', img:'assets/f1.jpg'   },
+  { id:'D1',   name:'Unknown Fighter D',  rarity:'D',   color:'#78716c', img:'assets/d1.jpg'   },
+  { id:'C1',   name:'Unknown Fighter C',  rarity:'C',   color:'#4ade80', img:'assets/c1.jpg'   },
+  { id:'B1',   name:'Unknown Fighter B',  rarity:'B',   color:'#3b82f6', img:'assets/b1.jpg'   },
+  { id:'A1',   name:'Unknown Fighter A',  rarity:'A',   color:'#a855f7', img:'assets/a1.jpg'   },
+  { id:'S1',   name:'Unknown Fighter S',  rarity:'S',   color:'#f59e0b', img:'assets/s1.jpg'   },
+  { id:'SS1',  name:'Unknown Fighter SS', rarity:'SS',  color:'#ef4444', img:'assets/ss1.jpg'  },
+  { id:'SSR1',  name:'Saitama',           rarity:'SSR', color:'#ffd700', img:'assets/ssr1.jpg' },
+  { id:'SSR2',  name:'Imu-sama',          rarity:'SSR', color:'#ffd700', img:'assets/ssr2.jpg' },
+  { id:'SSR3',  name:'Joy Boy',           rarity:'SSR', color:'#ffd700', img:'assets/ssr3.jpg' },
+  { id:'SSR4',  name:'Emeth (Iron Giant)',rarity:'SSR', color:'#ffd700', img:'assets/ssr4.jpg' },
+  { id:'SSR5',  name:'Anti Spiral',       rarity:'SSR', color:'#ffd700', img:'assets/ssr5.jpg' },
+  { id:'SSR6',  name:'Son Goku',          rarity:'SSR', color:'#ffd700', img:'assets/ssr6.jpg' },
+  { id:'SSR7',  name:'Kaguya Otsutsuki',  rarity:'SSR', color:'#ffd700', img:'assets/ssr7.jpg' },
+  { id:'SSR8',  name:'Hashirama Senju',   rarity:'SSR', color:'#ffd700', img:'assets/ssr8.jpg' },
+  { id:'SSR9',  name:'Gojo Satoru',       rarity:'SSR', color:'#ffd700', img:'assets/ssr9.jpg' },
+  { id:'SSR10', name:'Sukuna (Heian)',     rarity:'SSR', color:'#ffd700', img:'assets/ssr10.jpg'},
+  { id:'SSR11', name:'Blast',             rarity:'SSR', color:'#ffd700', img:'assets/ssr11.jpg'},
+  { id:'SSR12', name:'Cosmic Garou',      rarity:'SSR', color:'#ffd700', img:'assets/ssr12.jpg'},
+  { id:'SSR13', name:'Boros',             rarity:'SSR', color:'#ffd700', img:'assets/ssr13.jpg'},
+  { id:'SSR14', name:'Rimuru Tempest',    rarity:'SSR', color:'#ffd700', img:'assets/ssr14.jpg'},
+  { id:'SSR15', name:'Anos Voldigoad',    rarity:'SSR', color:'#ffd700', img:'assets/ssr15.jpg'},
+];
+
+const RARITY_COLORS = { F:'#64748b', D:'#78716c', C:'#4ade80', B:'#3b82f6', A:'#a855f7', S:'#f59e0b', SS:'#ef4444', SSR:'#ffd700' };
+const RARITIES = ['F','D','C','B','A','S','SS','SSR'];
+
+// ─── STATE ─────────────────────────────────────────────────────────
+let adminPassword = '';
+let allRequests = [];
+let currentFilter = 'all';
+let currentRequestId = null;
+let refreshInterval = null;
+let refreshCountdown = 30;
+const API_BASE = window.location.origin;
+
+// Give card state
+let giveType = 'gems';
+let selectedCardId = null;
+let activeRarities = new Set(RARITIES);
+let giveLog = JSON.parse(localStorage.getItem('adminGiveLog') || '[]');
+
+// ─── TABS ───────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'givecard') { buildCardPicker(); renderGiveLog(); }
+}
+
+// ─── AUTH ───────────────────────────────────────────────────────────
+function login() {
+  const pwd = document.getElementById('pwd-input').value.trim();
+  if (!pwd) return;
+  adminPassword = pwd;
+  fetch(`${API_BASE}/api/admin`, { headers: { 'x-admin-password': adminPassword } })
+    .then(r => {
+      if (r.status === 401) {
+        document.getElementById('login-error').style.display = 'block';
+        adminPassword = '';
+      } else if (r.ok) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        r.json().then(data => { allRequests = data; renderTable(); updateStats(); startAutoRefresh(); });
+      }
+    })
+    .catch(() => {
+      document.getElementById('login-error').textContent = 'Gagal konek ke server!';
+      document.getElementById('login-error').style.display = 'block';
+    });
+}
+
+function logout() {
+  adminPassword = '';
+  clearInterval(refreshInterval);
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// ─── AUTO REFRESH ───────────────────────────────────────────────────
+function startAutoRefresh() {
+  refreshCountdown = 30;
+  clearInterval(refreshInterval);
+  refreshInterval = setInterval(() => {
+    refreshCountdown--;
+    document.getElementById('refresh-timer').textContent = refreshCountdown + 's';
+    if (refreshCountdown <= 0) loadRequests();
+  }, 1000);
+}
+
+function loadRequests() {
+  refreshCountdown = 30;
+  fetch(`${API_BASE}/api/admin`, { headers: { 'x-admin-password': adminPassword } })
+    .then(r => r.json())
+    .then(data => { allRequests = Array.isArray(data) ? data : []; renderTable(); updateStats(); showToast('✓ Data diperbarui'); })
+    .catch(() => showToast('❌ Gagal memuat data', true));
+}
+
+// ─── STATS ──────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent    = allRequests.length;
+  document.getElementById('stat-pending').textContent  = allRequests.filter(r => r.status === 'pending').length;
+  document.getElementById('stat-approved').textContent = allRequests.filter(r => r.status === 'approved').length;
+  document.getElementById('stat-rejected').textContent = allRequests.filter(r => r.status === 'rejected').length;
+}
+
+// ─── FILTER ─────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+// ─── TABLE ──────────────────────────────────────────────────────────
+function renderTable() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  const filtered = allRequests.filter(r => {
+    const matchFilter = currentFilter === 'all' || r.status === currentFilter;
+    const matchSearch = !query || r.playerName.toLowerCase().includes(query);
+    return matchFilter && matchSearch;
+  });
+  const tbody = document.getElementById('table-body');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📭</div><p>Tidak ada request ditemukan</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => `
+    <tr>
+      <td><div class="player-name">${escHtml(r.playerName)}</div><div class="req-id">${r.id}</div></td>
+      <td><span class="gems-cell">💎 ${r.gems}</span></td>
+      <td><span class="amount-cell">${formatRp(r.amount)}</span></td>
+      <td><span class="method-badge">${escHtml(r.paymentMethod)}</span></td>
+      <td>${statusBadge(r.status)}</td>
+      <td><div class="time-cell">${formatTime(r.createdAt)}</div></td>
+      <td>
+        <div class="action-cell">
+          <button class="btn-detail" onclick="openDetail('${r.id}')">Detail</button>
+          ${r.status === 'pending' ? `
+            <button class="btn-approve" onclick="quickAction('${r.id}','approved')">✓</button>
+            <button class="btn-reject" onclick="quickAction('${r.id}','rejected')">✕</button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function statusBadge(status) {
+  const map = {
+    pending:  `<span class="status-badge status-pending">⏳ Pending</span>`,
+    approved: `<span class="status-badge status-approved">✅ Approved</span>`,
+    rejected: `<span class="status-badge status-rejected">❌ Rejected</span>`,
+  };
+  return map[status] || status;
+}
+
+// ─── ACTIONS ────────────────────────────────────────────────────────
+function quickAction(id, action) {
+  if (action === 'approved' && !confirm(`Setujui request ${id}?`)) return;
+  if (action === 'rejected' && !confirm(`Tolak request ${id}?`)) return;
+  sendAction(id, action, '');
+}
+function actionFromModal(action) {
+  const note = document.getElementById('admin-note').value.trim();
+  sendAction(currentRequestId, action, note);
+  closeModal();
+}
+function sendAction(id, action, note) {
+  fetch(`${API_BASE}/api/admin`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+    body: JSON.stringify({ id, action, adminNote: note })
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      const idx = allRequests.findIndex(r => r.id === id);
+      if (idx >= 0) allRequests[idx] = data.request;
+      renderTable(); updateStats();
+      showToast(action === 'approved' ? '✅ Request disetujui!' : '❌ Request ditolak!');
+    } else { showToast('Gagal: ' + (data.error || 'Unknown error'), true); }
+  }).catch(() => showToast('❌ Gagal kirim aksi', true));
+}
+
+// ─── MODAL ──────────────────────────────────────────────────────────
+function openDetail(id) {
+  const r = allRequests.find(x => x.id === id);
+  if (!r) return;
+  currentRequestId = id;
+  const fields = [
+    { label: 'ID Request', value: r.id, mono: true },
+    { label: 'Nama Player', value: r.playerName },
+    { label: 'Gems Diminta', value: `💎 ${r.gems} Gems` },
+    { label: 'Nominal Bayar', value: formatRp(r.amount) },
+    { label: 'Metode Pembayaran', value: r.paymentMethod },
+    { label: 'Status', value: statusBadge(r.status) },
+    { label: 'Waktu Request', value: formatTime(r.createdAt), mono: true },
+    { label: 'Diperbarui', value: formatTime(r.updatedAt), mono: true },
+  ];
+  if (r.adminNote) fields.push({ label: 'Catatan Admin', value: r.adminNote });
+  let fieldsHTML = fields.map(f => `
+    <div class="modal-field">
+      <div class="modal-field-label">${f.label}</div>
+      <div class="modal-field-value ${f.mono?'mono':''}">${f.value}</div>
+    </div>
+  `).join('');
+  if (r.paymentProof) {
+    fieldsHTML += `<div class="modal-field"><div class="modal-field-label">Bukti Pembayaran</div><a href="${r.paymentProof}" target="_blank" class="proof-link">Lihat bukti →</a></div>`;
+  }
+  document.getElementById('modal-fields').innerHTML = fieldsHTML;
+  document.getElementById('admin-note').value = r.adminNote || '';
+  const isPending = r.status === 'pending';
+  document.getElementById('modal-approve-btn').style.display = isPending ? 'inline-flex' : 'none';
+  document.getElementById('modal-reject-btn').style.display  = isPending ? 'inline-flex' : 'none';
+  document.getElementById('detail-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('detail-modal').classList.remove('open');
+  currentRequestId = null;
+}
+document.getElementById('detail-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// ─── GIVE CARD SYSTEM ───────────────────────────────────────────────
+function setGiveType(type) {
+  giveType = type;
+  if (type === 'gems') {
+    document.getElementById('give-gems-section').style.display = '';
+    document.getElementById('give-card-section').style.display = 'none';
+    document.getElementById('toggle-gems').className = 'give-type-btn active-gems';
+    document.getElementById('toggle-card').className = 'give-type-btn';
+  } else {
+    document.getElementById('give-gems-section').style.display = 'none';
+    document.getElementById('give-card-section').style.display = '';
+    document.getElementById('toggle-gems').className = 'give-type-btn';
+    document.getElementById('toggle-card').className = 'give-type-btn active-card';
+    buildCardPicker();
+  }
+  updateGivePreview();
+}
+
+// Rarity filter pills
+function buildRarityFilters() {
+  const wrap = document.getElementById('rarity-filters');
+  wrap.innerHTML = RARITIES.map(r => {
+    const c = RARITY_COLORS[r];
+    return `<button class="rarity-pill selected" id="rpill-${r}"
+      style="color:${c};border-color:${c};background:${c}22;"
+      onclick="toggleRarity('${r}')">${r}</button>`;
+  }).join('');
+}
+
+function toggleRarity(r) {
+  if (activeRarities.has(r)) {
+    if (activeRarities.size === 1) return; // keep at least one
+    activeRarities.delete(r);
+    document.getElementById('rpill-' + r).classList.remove('selected');
+  } else {
+    activeRarities.add(r);
+    document.getElementById('rpill-' + r).classList.add('selected');
+  }
+  renderCardPicker();
+}
+
+function buildCardPicker() {
+  if (document.getElementById('rarity-filters').innerHTML === '') {
+    buildRarityFilters();
+  }
+  renderCardPicker();
+}
+
+function filterCardPicker() { renderCardPicker(); }
+
+function renderCardPicker() {
+  const query = (document.getElementById('card-picker-search').value || '').toLowerCase();
+  const filtered = ALL_CARDS.filter(c =>
+    activeRarities.has(c.rarity) &&
+    (!query || c.name.toLowerCase().includes(query) || c.id.toLowerCase().includes(query))
+  );
+  const grid = document.getElementById('card-picker-grid');
+  grid.innerHTML = filtered.map(c => {
+    const isSelected = c.id === selectedCardId;
+    return `
+      <div class="card-pick-item ${isSelected ? 'selected' : ''}" id="cpick-${c.id}"
+        style="${isSelected ? `border-color:${c.color};` : ''}"
+        onclick="selectCard('${c.id}')">
+        ${isSelected ? '<div class="card-pick-check">✓</div>' : ''}
+        <img class="card-pick-img" src="${c.img}" alt="${c.name}"
+          onerror="this.src='https://placehold.co/80x107/${c.color.replace('#','')}/${c.rarity==='S'?'000':'fff'}?text=${encodeURIComponent(c.name)}'">
+        <div class="card-pick-name">${c.name}</div>
+        <div class="card-pick-rarity" style="color:${c.color}">${c.rarity}</div>
+      </div>`;
+  }).join('');
+}
+
+function selectCard(id) {
+  selectedCardId = id;
+  renderCardPicker();
+  const card = ALL_CARDS.find(c => c.id === id);
+  if (card) {
+    const prev = document.getElementById('selected-card-preview');
+    prev.style.display = 'flex';
+    prev.style.borderColor = card.color + '60';
+    document.getElementById('sel-card-img').src = card.img;
+    document.getElementById('sel-card-img').style.borderColor = card.color;
+    document.getElementById('sel-card-name').textContent = card.name;
+    document.getElementById('sel-card-rarity').textContent = card.rarity;
+    document.getElementById('sel-card-rarity').style.color = card.color;
+    document.getElementById('btn-give-card').disabled = false;
+  }
+  updateGivePreview();
+}
+
+function updateGivePreview() {
+  const player = document.getElementById('give-player').value.trim() || 'semua player';
+  if (giveType === 'gems') {
+    const amt = document.getElementById('give-gems-amount').value || '0';
+    document.getElementById('gems-preview-amount').textContent = amt;
+    document.getElementById('gems-preview-player').textContent = player;
+  } else {
+    const card = ALL_CARDS.find(c => c.id === selectedCardId);
+    const qty = document.getElementById('give-card-qty').value || '1';
+    if (card) {
+      document.getElementById('card-confirm-preview').innerHTML =
+        `Akan memberikan <b style="color:${card.color}">${card.name}</b> [<b>${card.rarity}</b>] x<b>${qty}</b> ke <b>${player}</b>`;
+    } else {
+      document.getElementById('card-confirm-preview').textContent = 'Pilih kartu terlebih dahulu di atas';
+    }
+  }
+}
+
+// Wire inputs
+document.getElementById('give-gems-amount').addEventListener('input', updateGivePreview);
+document.getElementById('give-player').addEventListener('input', updateGivePreview);
+
+async function executeGive(type) {
+  const targetPlayer = document.getElementById('give-player').value.trim();
+  const btn = type === 'gems'
+    ? document.querySelector('.btn-give-gems')
+    : document.getElementById('btn-give-card');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Mengirim...'; }
+
+  try {
+    let body;
+    if (type === 'gems') {
+      const amt = parseInt(document.getElementById('give-gems-amount').value) || 0;
+      if (amt <= 0) { showToast('Masukkan jumlah gems yang valid!', true); return; }
+      body = { type: 'gems', amount: amt, targetPlayer };
+    } else {
+      if (!selectedCardId) { showToast('Pilih kartu dulu!', true); return; }
+      const qty = parseInt(document.getElementById('give-card-qty').value) || 1;
+      body = { type: 'card', cardId: selectedCardId, qty, targetPlayer };
+    }
+
+    const res = await fetch('/api/give', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const card = type === 'card' ? ALL_CARDS.find(c => c.id === selectedCardId) : null;
+      const label = type === 'gems'
+        ? `💎 ${body.amount} Gems`
+        : `🃏 ${card?.name} [${card?.rarity}] x${body.qty}`;
+      addGiveLog(type, label, targetPlayer || 'semua player');
+      showToast(`✅ Berhasil dikirim! Player akan menerima dalam ~15 detik.`);
+    } else {
+      showToast('❌ Gagal: ' + (data.error || 'Unknown error'), true);
+    }
+  } catch(e) {
+    showToast('❌ Koneksi gagal ke server!', true);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = type === 'gems' ? '💎 Give Gems Sekarang' : '🃏 Give Kartu Sekarang';
+    }
+  }
+}
+
+function addGiveLog(type, item, target) {
+  const entry = { type, item, target, time: new Date().toISOString() };
+  giveLog.unshift(entry);
+  if (giveLog.length > 50) giveLog = giveLog.slice(0, 50);
+  localStorage.setItem('adminGiveLog', JSON.stringify(giveLog));
+  renderGiveLog();
+}
+
+function renderGiveLog() {
+  const body = document.getElementById('give-log-body');
+  if (!giveLog.length) {
+    body.innerHTML = `<div class="give-log-item" style="color:var(--muted);font-size:0.8rem;justify-content:center;">Belum ada riwayat</div>`;
+    return;
+  }
+  body.innerHTML = giveLog.slice(0, 20).map(e => `
+    <div class="give-log-item">
+      <div class="give-log-icon">${e.type === 'gems' ? '💎' : '🃏'}</div>
+      <div class="give-log-text">
+        <b>${e.item}</b> → <span style="color:var(--accent)">${escHtml(e.target)}</span>
+      </div>
+      <div class="give-log-time">${formatTime(e.time)}</div>
+    </div>
+  `).join('');
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────────
+function formatRp(amount) { return 'Rp ' + Number(amount).toLocaleString('id-ID'); }
+function formatTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'})
+    + ' ' + d.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+}
+function escHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let toastTimeout;
+function showToast(msg, isErr = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isErr ? 'rgba(248,81,73,0.4)' : 'rgba(63,185,80,0.4)';
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login();
+});
+</script>
+</body>
+</html>
